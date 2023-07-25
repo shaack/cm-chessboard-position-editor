@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./node_modules/cm-chessboard/assets/chessboard.css"/>
+    <link rel="stylesheet" href="./node_modules/cm-chessboard/assets/extensions/markers/markers.css"/>
+    <link rel="stylesheet" href="./node_modules/cm-chessboard/assets/extensions/promotion-dialog/promotion-dialog.css"/>
+    <title>Example of the PositionEditor extension for cm-chessboard</title>
+</head>
+<body>
+<h1>The PositionEditor extension for cm-chessboard</h1>
+<div id="chessboard" style="max-width: 800px; margin: 0 auto"></div>
+<script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.8.0/dist/es-module-shims.min.js"></script>
+<!-- @formatter:off -->
+<script type="importmap">
+    {
+        "imports": {
+            "cm-chessboard/": "./node_modules/cm-chessboard/"
+        }
+    }
+</script>
+<!-- @formatter:on -->
+<script type="module">
+    import {Chessboard} from "cm-chessboard/src/Chessboard.js"
+    import {PositionEditor} from "./src/PositionEditor.js"
+    import {Markers} from "cm-chessboard/src/extensions/markers/Markers.js"
+
+    const chessboard = new Chessboard(document.getElementById("chessboard"), {
+        position: "7k/1P6/8/b7/6r1/8/pp2PPPP/2R1KBNR w - - 0 1", // "4k3/1P6/8/8/6r1/8/pp2PPPP/2R1KBNR w K - 0 1",
+        assetsUrl: "node_modules/cm-chessboard/assets/",
+        extensions: [{class: PositionEditor}, {class: Markers}]
+    })
+
+</script>
+</body>
+</html>

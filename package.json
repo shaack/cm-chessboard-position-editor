@@ -1,0 +1,24 @@
+{
+  "name": "cm-chessboard-position-editor",
+  "version": "1.0.0",
+  "description": "cm-chessboard extension to edit chess positions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shaack/cm-chessboard-position-editor.git"
+  },
+  "keywords": [
+    "ES&",
+    "JavaScript",
+    "Chess",
+    "cm-chessboard"
+  ],
+  "author": "shaack.com",
+  "license": "MIT",
+  "dependencies": {
+    "cm-chessboard": "^7.7.10"
+  }
+}
