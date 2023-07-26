@@ -19,6 +19,6 @@
   "author": "shaack.com",
   "license": "MIT",
   "dependencies": {
-    "cm-chessboard": "^7.7.10"
+    "cm-chessboard": "^7.7.11"
   }
 }

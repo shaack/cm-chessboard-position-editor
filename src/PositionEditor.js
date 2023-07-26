@@ -5,9 +5,17 @@
  */
 import {Extension} from "cm-chessboard/src/model/Extension.js"
 import {PromotionDialog} from "cm-chessboard/src/extensions/promotion-dialog/PromotionDialog.js"
-import {INPUT_EVENT_TYPE} from "cm-chessboard/src/Chessboard.js";
+import {INPUT_EVENT_TYPE} from "cm-chessboard/src/Chessboard.js"
 import {MOVE_CANCELED_REASON} from "cm-chessboard/src/view/VisualMoveInput.js"
 import {SelectPieceDialog} from "./extensions/SelectPieceDialog.js"
+
+/*
+ToDo
+    - Castling
+    - En passant
+    - Take move back
+    - Take all moves back
+ */
 
 export class PositionEditor extends Extension {
 
@@ -27,19 +35,14 @@ export class PositionEditor extends Extension {
                     return this.onMoveInputFinished(event)
             }
         })
-        chessboard.enableSquareSelect((event) => {
-            console.log(event)
-            if(!chessboard.getPiece(event.square)) {
-                chessboard.showSelectPieceDialog(event.square, (piece) => {
-                    chessboard.setPiece(event.square, piece)
-                })
-            }
+        chessboard.context.addEventListener("click", (event) => {
+            this.onClick(event)
         })
     }
 
     onMoveInputCanceled(event) {
-        console.log("onMoveInputCanceled", event)
-        if(event.reason === MOVE_CANCELED_REASON.movedOutOfBoard) {
+        // remove piece if it was moved out of the board
+        if (event.reason === MOVE_CANCELED_REASON.movedOutOfBoard) {
             this.chessboard.setPiece(event.squareFrom, null)
         }
     }
@@ -49,8 +52,12 @@ export class PositionEditor extends Extension {
     }
 
     onMoveInputFinished(event) {
-        return true
-        /*
+        if(event.squareTo) {
+            this.handlePromotion(event)
+        }
+    }
+
+    handlePromotion(event) {
         const piece = this.chessboard.getPiece(event.squareTo)
         const color = piece[0]
         const type = piece[1]
@@ -69,6 +76,16 @@ export class PositionEditor extends Extension {
 
             }
         }
-        */
+    }
+
+    onClick(event) {
+        const square = event.target.getAttribute("data-square")
+        if (square && !this.chessboard.getPiece(square)) {
+            this.chessboard.showSelectPieceDialog(square, (result) => {
+                if(result) {
+                    this.chessboard.setPiece(square, result.piece, true)
+                }
+            })
+        }
     }
 }

@@ -6,6 +6,7 @@
 import {Extension, EXTENSION_POINT} from "cm-chessboard/src/model/Extension.js"
 import {Svg} from "cm-chessboard/src/lib/Svg.js"
 import {Utils} from "cm-chessboard/src/lib/Utils.js"
+import {COLOR, PIECE} from "cm-chessboard/src/Chessboard.js"
 
 const DISPLAY_STATE = {
     hidden: "hidden",
@@ -33,9 +34,8 @@ export class SelectPieceDialog extends Extension {
     }
 
     // public (chessboard.showPromotionDialog)
-    showSelectPieceDialog(square, color, callback) {
+    showSelectPieceDialog(square, callback) {
         this.state.dialogParams.square = square
-        this.state.dialogParams.color = color
         this.state.callback = callback
         this.setDisplayState(DISPLAY_STATE.displayRequested)
         setTimeout(() => {
@@ -63,7 +63,7 @@ export class SelectPieceDialog extends Extension {
         Svg.addElement(this.selectPieceDialogGroup,
             "rect", {
                 x: point.x, y: point.y, width: squareWidth, height: squareHeight,
-                class: "promotion-dialog-button",
+                class: "select-piece-dialog-button",
                 "data-piece": piece
             })
         this.chessboard.view.drawPiece(this.selectPieceDialogGroup, piece, point)
@@ -93,40 +93,40 @@ export class SelectPieceDialog extends Extension {
                     y: squareCenterPoint.y + offsetY,
                     width: squareWidth,
                     height: squareHeight * 4,
-                    class: "promotion-dialog"
+                    class: "select-piece-dialog"
                 })
             const dialogParams = this.state.dialogParams
             if (turned) {
-                this.drawPieceButton(PIECE[dialogParams.color + "q"], {
+                this.drawPieceButton(PIECE["wp"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y - squareHeight
                 })
-                this.drawPieceButton(PIECE[dialogParams.color + "r"], {
+                this.drawPieceButton(PIECE["wn"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y - squareHeight * 2
                 })
-                this.drawPieceButton(PIECE[dialogParams.color + "b"], {
+                this.drawPieceButton(PIECE["wb"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y - squareHeight * 3
                 })
-                this.drawPieceButton(PIECE[dialogParams.color + "n"], {
+                this.drawPieceButton(PIECE["wr"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y - squareHeight * 4
                 })
             } else {
-                this.drawPieceButton(PIECE[dialogParams.color + "q"], {
+                this.drawPieceButton(PIECE["wp"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y
                 })
-                this.drawPieceButton(PIECE[dialogParams.color + "r"], {
+                this.drawPieceButton(PIECE["wn"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y + squareHeight
                 })
-                this.drawPieceButton(PIECE[dialogParams.color + "b"], {
+                this.drawPieceButton(PIECE["wb"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y + squareHeight * 2
                 })
-                this.drawPieceButton(PIECE[dialogParams.color + "n"], {
+                this.drawPieceButton(PIECE["wr"], {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y + squareHeight * 3
                 })
@@ -134,18 +134,18 @@ export class SelectPieceDialog extends Extension {
         }
     }
 
-    promotionDialogOnClickPiece(event) {
+    onClickPiece(event) {
         if (event.button !== 2) {
             if (event.target.dataset.piece) {
                 this.state.callback({square: this.state.dialogParams.square, piece: event.target.dataset.piece})
                 this.setDisplayState(DISPLAY_STATE.hidden)
             } else {
-                this.promotionDialogOnCancel(event)
+                this.onCancel(event)
             }
         }
     }
 
-    promotionDialogOnCancel(event) {
+    onCancel(event) {
         if (this.state.displayState === DISPLAY_STATE.shown) {
             event.preventDefault()
             this.setDisplayState(DISPLAY_STATE.hidden)
@@ -165,7 +165,7 @@ export class SelectPieceDialog extends Extension {
             this.clickDelegate = Utils.delegate(this.chessboard.view.svg,
                 "mousedown",
                 "*",
-                this.promotionDialogOnClickPiece.bind(this))
+                this.onClickPiece.bind(this))
             this.contextMenuListener = this.contextMenu.bind(this)
             this.chessboard.view.svg.addEventListener("contextmenu", this.contextMenuListener)
         } else if (displayState === DISPLAY_STATE.hidden) {
