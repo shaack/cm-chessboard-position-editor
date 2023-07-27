@@ -80,14 +80,23 @@ export class SelectPieceDialog extends Extension {
             this.selectPieceDialogGroup.removeChild(this.selectPieceDialogGroup.firstChild)
         }
         if (this.state.displayState === DISPLAY_STATE.shown) {
+            const turned = this.chessboard.getOrientation() === COLOR.black
             const squareWidth = this.chessboard.view.squareWidth
             const squareHeight = this.chessboard.view.squareHeight
             const squareCenterPoint = this.chessboard.view.squareToPoint(this.state.dialogParams.square)
             squareCenterPoint.x = squareCenterPoint.x + squareWidth / 2
             squareCenterPoint.y = squareCenterPoint.y + squareHeight / 2
             const rank = parseInt(this.state.dialogParams.square.charAt(1), 10)
-            const offsetY = 0
-            const offsetX = squareCenterPoint.x + squareWidth * 2 > this.chessboard.view.width ? -squareWidth * 2 : 0
+            let offsetX = 0
+            if (squareCenterPoint.x + squareWidth * 2 > this.chessboard.view.width) {
+                offsetX = -squareWidth * 2
+            }
+            let offsetY = 0
+            if (!turned && rank < 7) {
+                offsetY = -squareHeight * (7 - rank)
+            } else if(turned && rank > 2) {
+                offsetY = squareHeight * (2 - rank)
+            }
             Svg.addElement(this.selectPieceDialogGroup,
                 "rect", {
                     x: squareCenterPoint.x + offsetX,
