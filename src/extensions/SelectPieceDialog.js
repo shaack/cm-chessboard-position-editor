@@ -85,57 +85,35 @@ export class SelectPieceDialog extends Extension {
             const squareCenterPoint = this.chessboard.view.squareToPoint(this.state.dialogParams.square)
             squareCenterPoint.x = squareCenterPoint.x + squareWidth / 2
             squareCenterPoint.y = squareCenterPoint.y + squareHeight / 2
-            let turned = false
             const rank = parseInt(this.state.dialogParams.square.charAt(1), 10)
-            if (this.chessboard.getOrientation() === COLOR.white && rank < 5 ||
-                this.chessboard.getOrientation() === COLOR.black && rank >= 5) {
-                turned = true
-            }
-            const offsetY = turned ? -4 * squareHeight : 0
-            const offsetX = squareCenterPoint.x + squareWidth > this.chessboard.view.width ? -squareWidth : 0
+            const offsetY = 0
+            const offsetX = squareCenterPoint.x + squareWidth * 2 > this.chessboard.view.width ? -squareWidth * 2 : 0
             Svg.addElement(this.selectPieceDialogGroup,
                 "rect", {
                     x: squareCenterPoint.x + offsetX,
                     y: squareCenterPoint.y + offsetY,
-                    width: squareWidth,
-                    height: squareHeight * 4,
+                    width: squareWidth * 2,
+                    height: squareHeight * 6,
                     class: "select-piece-dialog"
                 })
-            if (turned) {
-                this.drawPieceButton(PIECE["wp"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y - squareHeight
-                })
-                this.drawPieceButton(PIECE["wn"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y - squareHeight * 2
-                })
-                this.drawPieceButton(PIECE["wb"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y - squareHeight * 3
-                })
-                this.drawPieceButton(PIECE["wr"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y - squareHeight * 4
-                })
-            } else {
-                this.drawPieceButton(PIECE["wp"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y
-                })
-                this.drawPieceButton(PIECE["wn"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y + squareHeight
-                })
-                this.drawPieceButton(PIECE["wb"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y + squareHeight * 2
-                })
-                this.drawPieceButton(PIECE["wr"], {
-                    x: squareCenterPoint.x + offsetX,
-                    y: squareCenterPoint.y + squareHeight * 3
+            const drawPiece = (piece, x, y) => {
+                this.drawPieceButton(piece, {
+                    x: squareCenterPoint.x + offsetX + squareWidth * x,
+                    y: squareCenterPoint.y + offsetY + squareHeight * y
                 })
             }
+            drawPiece(PIECE["wp"], 0, 0)
+            drawPiece(PIECE["wn"], 0, 1)
+            drawPiece(PIECE["wb"], 0, 2)
+            drawPiece(PIECE["wr"], 0, 3)
+            drawPiece(PIECE["wq"], 0, 4)
+            drawPiece(PIECE["wk"], 0, 5)
+            drawPiece(PIECE["bp"], 1, 0)
+            drawPiece(PIECE["bn"], 1, 1)
+            drawPiece(PIECE["bb"], 1, 2)
+            drawPiece(PIECE["br"], 1, 3)
+            drawPiece(PIECE["bq"], 1, 4)
+            drawPiece(PIECE["bk"], 1, 5)
         }
     }
 

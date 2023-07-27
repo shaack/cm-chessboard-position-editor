@@ -8,6 +8,7 @@ import {PromotionDialog} from "cm-chessboard/src/extensions/promotion-dialog/Pro
 import {INPUT_EVENT_TYPE} from "cm-chessboard/src/Chessboard.js"
 import {MOVE_CANCELED_REASON} from "cm-chessboard/src/view/VisualMoveInput.js"
 import {SelectPieceDialog} from "./extensions/SelectPieceDialog.js"
+import {MARKER_TYPE} from "cm-chessboard/src/extensions/markers/Markers.js"
 
 /*
 ToDo
@@ -89,8 +90,10 @@ export class PositionEditor extends Extension {
                     }
                     setTimeout(() => {
                         this.dialogShown = false
+                        this.chessboard.removeMarkers(MARKER_TYPE.framePrimary, square)
                     })
                 })
+                this.chessboard.addMarker(MARKER_TYPE.framePrimary, square)
             }
             this.dialogShown = true
         }
