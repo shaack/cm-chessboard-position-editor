@@ -14,6 +14,9 @@
 <body>
 <h1>A PositionEditor extension for cm-chessboard</h1>
 <div id="chessboard" style="max-width: 800px; margin: 0 auto"></div>
+<button style="margin-top: 10px"
+        onclick="window.switchOrientation()">Switch Orientation
+</button>
 <script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.8.0/dist/es-module-shims.min.js"></script>
 <!-- @formatter:off -->
 <script type="importmap">
@@ -34,7 +37,9 @@
         assetsUrl: "node_modules/cm-chessboard/assets/",
         extensions: [{class: PositionEditor}, {class: Markers}]
     })
-
+    window.switchOrientation = function () {
+        chessboard.setOrientation(chessboard.getOrientation() === 'w' ? 'b' : 'w')
+    }
 </script>
 </body>
 </html>

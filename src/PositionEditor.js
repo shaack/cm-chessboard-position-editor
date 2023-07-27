@@ -12,6 +12,7 @@ import {MARKER_TYPE} from "cm-chessboard/src/extensions/markers/Markers.js"
 
 /*
 ToDo
+    - Promotion (done ✓)
     - Castling
     - En passant
     - Take move back
