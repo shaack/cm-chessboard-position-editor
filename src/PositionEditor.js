@@ -20,6 +20,9 @@ ToDo
     - Take all moves back
 */
 
+// clone MARKER_TYPE.frame
+const MARKER_TYPE_NEW_PIECE = { ...MARKER_TYPE.frame }
+
 export class PositionEditor extends Extension {
 
     constructor(chessboard, props = {}) {
@@ -139,10 +142,10 @@ export class PositionEditor extends Extension {
                     }
                     setTimeout(() => {
                         this.dialogShown = false
-                        this.chessboard.removeMarkers(MARKER_TYPE.framePrimary, square)
+                        this.chessboard.removeMarkers(MARKER_TYPE_NEW_PIECE, square)
                     })
                 })
-                this.chessboard.addMarker(MARKER_TYPE.framePrimary, square)
+                this.chessboard.addMarker(MARKER_TYPE_NEW_PIECE, square)
             }
             this.dialogShown = true
         }
