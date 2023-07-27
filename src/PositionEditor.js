@@ -5,19 +5,20 @@
  */
 import {Extension} from "cm-chessboard/src/model/Extension.js"
 import {PromotionDialog} from "cm-chessboard/src/extensions/promotion-dialog/PromotionDialog.js"
-import {INPUT_EVENT_TYPE} from "cm-chessboard/src/Chessboard.js"
+import {COLOR, INPUT_EVENT_TYPE} from "cm-chessboard/src/Chessboard.js"
 import {MOVE_CANCELED_REASON} from "cm-chessboard/src/view/VisualMoveInput.js"
 import {SelectPieceDialog} from "./extensions/SelectPieceDialog.js"
 import {MARKER_TYPE} from "cm-chessboard/src/extensions/markers/Markers.js"
 
 /*
 ToDo
+    - Select piece (done ✓)
     - Promotion (done ✓)
-    - Castling
-    - En passant
+    - Castling (done ✓)
+    - En passant (done ✓)
     - Take move back
     - Take all moves back
- */
+*/
 
 export class PositionEditor extends Extension {
 
@@ -50,12 +51,19 @@ export class PositionEditor extends Extension {
     }
 
     onValidateMoveInput(event) {
+        if (this.chessboard.getPiece(event.squareTo)) {
+            this.captured = this.chessboard.getPiece(event.squareTo)
+        } else {
+            this.captured = null
+        }
         return true
     }
 
     onMoveInputFinished(event) {
-        if(event.squareTo) {
+        if (event.squareTo) {
             this.handlePromotion(event)
+            this.handleCastling(event)
+            this.handleEnPassant(event)
         }
     }
 
@@ -64,18 +72,54 @@ export class PositionEditor extends Extension {
         const color = piece[0]
         const type = piece[1]
         if (type === "p" &&
-            (color === "w" && event.squareTo[1] === "8" ||
-                color === "b" && event.squareTo[1] === "1")) {
+            (color === COLOR.white && event.squareTo[1] === "8" ||
+                color === COLOR.black && event.squareTo[1] === "1")) {
             this.chessboard.showPromotionDialog(event.squareTo, color, (promoteTo) => {
                 console.log("promoteTo", promoteTo)
                 this.chessboard.setPiece(promoteTo.square, promoteTo.piece, true)
             })
-            return false
         }
-        if (type === "k") {
-            if (event.squareFrom[1] === "1" && event.squareTo[1] === "1" && color === "w" ||
-                event.squareFrom[1] === "8" && event.squareTo[1] === "8" && color === "b") {
+    }
 
+    handleCastling(event) {
+        const piece = this.chessboard.getPiece(event.squareTo)
+        const color = piece[0]
+        const type = piece[1]
+        if (type === "k") {
+            if (event.squareFrom[1] === "1" && event.squareTo[1] === "1" && color === COLOR.white) {
+                if (event.squareFrom[0] === "e" && event.squareTo[0] === "g" && this.chessboard.getPiece("h1") === "wr") {
+                    this.chessboard.movePiece("h1", "f1", true)
+                } else if (event.squareFrom[0] === "e" && event.squareTo[0] === "c" && this.chessboard.getPiece("a1") === "wr") {
+                    this.chessboard.movePiece("a1", "d1", true)
+                }
+            }
+            if (event.squareFrom[1] === "8" && event.squareTo[1] === "8" && color === COLOR.black) {
+                if (event.squareFrom[0] === "e" && event.squareTo[0] === "g" && this.chessboard.getPiece("h8") === "br") {
+                    this.chessboard.movePiece("h8", "f8", true)
+                } else if (event.squareFrom[0] === "e" && event.squareTo[0] === "c" && this.chessboard.getPiece("a8") === "br") {
+                    this.chessboard.movePiece("a8", "d8", true)
+                }
+            }
+        }
+    }
+
+    handleEnPassant(event) {
+        const piece = this.chessboard.getPiece(event.squareTo)
+        const color = piece[0]
+        const type = piece[1]
+        console.log(event, this.captured)
+        if (type === "p") {
+            const rankFrom = parseInt(event.squareFrom[1], 10)
+            const rankTo = parseInt(event.squareTo[1], 10)
+            const fileFrom = COLOR.black.charCodeAt(0) - event.squareFrom[0].charCodeAt(0) + 8
+            const fileTo = COLOR.black.charCodeAt(0) - event.squareTo[0].charCodeAt(0) + 8
+            if (color === COLOR.white && rankFrom === 5 && rankTo === 6 && Math.abs(fileFrom - fileTo) === 1 &&
+                !this.captured && this.chessboard.getPiece(event.squareTo[0] + event.squareFrom[1]) === "bp") {
+                this.chessboard.setPiece(event.squareTo[0] + event.squareFrom[1], null, true)
+            }
+            if (color === COLOR.black && rankFrom === 4 && rankTo === 3 && Math.abs(fileFrom - fileTo) === 1 &&
+                !this.captured && this.chessboard.getPiece(event.squareTo[0] + event.squareFrom[1]) === "wp") {
+                this.chessboard.setPiece(event.squareTo[0] + event.squareFrom[1], null, true)
             }
         }
     }
@@ -84,7 +128,7 @@ export class PositionEditor extends Extension {
         const square = event.target.getAttribute("data-square")
         if (square && !this.chessboard.getPiece(square)) {
             console.log("onClick", event, this.dialogShown)
-            if(!this.dialogShown) {
+            if (!this.dialogShown) {
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
