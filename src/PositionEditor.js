@@ -47,7 +47,7 @@ export class PositionEditor extends Extension {
         }
         Object.assign(this.props, props)
         this.dialogShown = false
-        this.clickListener = this.onClick.bind(this)
+        this.clickListener = this.onSquareClick.bind(this)
         chessboard.context.addEventListener("click", this.clickListener)
     }
 
@@ -55,6 +55,9 @@ export class PositionEditor extends Extension {
         // remove piece if it was moved out of the board
         if (event.reason === MOVE_CANCELED_REASON.movedOutOfBoard) {
             this.chessboard.setPiece(event.squareFrom, null)
+            if (this.props.onPositionChanged) {
+                this.props.onPositionChanged(this.chessboard.getPosition())
+            }
         }
     }
 
@@ -72,7 +75,7 @@ export class PositionEditor extends Extension {
             this.handleCastling(event)
             this.handleEnPassant(event)
         }
-        if (this.props.onPositionChanged) {
+        if (this.props.onPositionChanged && event.legalMove) {
             this.props.onPositionChanged(this.chessboard.getPosition())
         }
     }
@@ -143,13 +146,16 @@ export class PositionEditor extends Extension {
         }
     }
 
-    onClick(event) {
+    onSquareClick(event) {
         const square = event.target.getAttribute("data-square")
         if (square && !this.chessboard.getPiece(square)) {
             if (!this.dialogShown) {
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
+                        if (this.props.onPositionChanged) {
+                            this.props.onPositionChanged(this.chessboard.getPosition())
+                        }
                     }
                     setTimeout(() => {
                         this.dialogShown = false
