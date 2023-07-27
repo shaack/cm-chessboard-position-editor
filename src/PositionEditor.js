@@ -42,7 +42,8 @@ export class PositionEditor extends Extension {
             }
         })
         this.props = {
-            autoSpecialMoves: true // castling, en passant, promotion
+            autoSpecialMoves: true, // castling, en passant, promotion
+            onPositionChanged: undefined // callback after each position change
         }
         Object.assign(this.props, props)
         this.dialogShown = false
@@ -63,29 +64,41 @@ export class PositionEditor extends Extension {
         } else {
             this.captured = null
         }
-        return true
+        return this.handlePromotion(event)
     }
 
     onMoveInputFinished(event) {
         if (event.squareTo && this.props.autoSpecialMoves) {
-            this.handlePromotion(event)
             this.handleCastling(event)
             this.handleEnPassant(event)
+        }
+        if (this.props.onPositionChanged) {
+            this.props.onPositionChanged(this.chessboard.getPosition())
         }
     }
 
     handlePromotion(event) {
-        const piece = this.chessboard.getPiece(event.squareTo)
+        const piece = this.chessboard.getPiece(event.squareFrom)
         const color = piece[0]
         const type = piece[1]
         if (type === "p" &&
             (color === COLOR.white && event.squareTo[1] === "8" ||
                 color === COLOR.black && event.squareTo[1] === "1")) {
+            this.chessboard.movePiece(event.squareFrom, event.squareTo, false)
             this.chessboard.showPromotionDialog(event.squareTo, color, (promoteTo) => {
-                console.log("promoteTo", promoteTo)
-                this.chessboard.setPiece(promoteTo.square, promoteTo.piece, true)
+                if(promoteTo) {
+                    this.chessboard.setPiece(event.squareFrom, null, false)
+                    this.chessboard.setPiece(promoteTo.square, promoteTo.piece, true)
+                    if (this.props.onPositionChanged) {
+                        this.props.onPositionChanged(this.chessboard.getPosition())
+                    }
+                } else {
+                    this.chessboard.movePiece(event.squareTo, event.squareFrom, true)
+                }
             })
+            return false
         }
+        return true
     }
 
     handleCastling(event) {
@@ -114,7 +127,6 @@ export class PositionEditor extends Extension {
         const piece = this.chessboard.getPiece(event.squareTo)
         const color = piece[0]
         const type = piece[1]
-        console.log(event, this.captured)
         if (type === "p") {
             const rankFrom = parseInt(event.squareFrom[1], 10)
             const rankTo = parseInt(event.squareTo[1], 10)
@@ -134,7 +146,6 @@ export class PositionEditor extends Extension {
     onClick(event) {
         const square = event.target.getAttribute("data-square")
         if (square && !this.chessboard.getPiece(square)) {
-            console.log("onClick", event, this.dialogShown)
             if (!this.dialogShown) {
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
