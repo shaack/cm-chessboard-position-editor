@@ -35,9 +35,9 @@ export class PositionEditor extends Extension {
                     return this.onMoveInputFinished(event)
             }
         })
-        chessboard.context.addEventListener("click", (event) => {
-            this.onClick(event)
-        })
+        this.dialogShown = false
+        this.clickListener = this.onClick.bind(this)
+        chessboard.context.addEventListener("click", this.clickListener)
     }
 
     onMoveInputCanceled(event) {
@@ -81,11 +81,18 @@ export class PositionEditor extends Extension {
     onClick(event) {
         const square = event.target.getAttribute("data-square")
         if (square && !this.chessboard.getPiece(square)) {
-            this.chessboard.showSelectPieceDialog(square, (result) => {
-                if(result) {
-                    this.chessboard.setPiece(square, result.piece, true)
-                }
-            })
+            console.log("onClick", event, this.dialogShown)
+            if(!this.dialogShown) {
+                this.chessboard.showSelectPieceDialog(square, (result) => {
+                    if (result) {
+                        this.chessboard.setPiece(square, result.piece, true)
+                    }
+                    setTimeout(() => {
+                        this.dialogShown = false
+                    })
+                })
+            }
+            this.dialogShown = true
         }
     }
 }

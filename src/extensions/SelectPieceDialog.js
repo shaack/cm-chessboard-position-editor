@@ -21,6 +21,7 @@ export class SelectPieceDialog extends Extension {
         super(chessboard)
         this.registerExtensionPoint(EXTENSION_POINT.redrawBoard, this.extensionPointRedrawBoard.bind(this))
         chessboard.showSelectPieceDialog = this.showSelectPieceDialog.bind(this)
+        chessboard.cancelSelectPieceDialog = this.cancelSelectPieceDialog.bind(this)
         chessboard.isSelectPieceDialogShown = this.isSelectPieceDialogShown.bind(this)
         this.selectPieceDialogGroup = Svg.addElement(chessboard.view.interactiveTopLayer, "g", {class: "select-piece-dialog-group"})
         this.state = {
@@ -44,6 +45,11 @@ export class SelectPieceDialog extends Extension {
                 })
             }
         )
+    }
+
+    cancelSelectPieceDialog() {
+        this.state.callback(null)
+        this.setDisplayState(DISPLAY_STATE.hidden)
     }
 
     // public (chessboard.isPromotionDialogShown)
@@ -95,7 +101,6 @@ export class SelectPieceDialog extends Extension {
                     height: squareHeight * 4,
                     class: "select-piece-dialog"
                 })
-            const dialogParams = this.state.dialogParams
             if (turned) {
                 this.drawPieceButton(PIECE["wp"], {
                     x: squareCenterPoint.x + offsetX,
@@ -148,8 +153,7 @@ export class SelectPieceDialog extends Extension {
     onCancel(event) {
         if (this.state.displayState === DISPLAY_STATE.shown) {
             event.preventDefault()
-            this.setDisplayState(DISPLAY_STATE.hidden)
-            this.state.callback(null)
+            this.cancelSelectPieceDialog()
         }
     }
 
@@ -163,7 +167,7 @@ export class SelectPieceDialog extends Extension {
         this.state.displayState = displayState
         if (displayState === DISPLAY_STATE.shown) {
             this.clickDelegate = Utils.delegate(this.chessboard.view.svg,
-                "mousedown",
+                "click",
                 "*",
                 this.onClickPiece.bind(this))
             this.contextMenuListener = this.contextMenu.bind(this)
