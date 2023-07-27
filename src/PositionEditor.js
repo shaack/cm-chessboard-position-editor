@@ -22,7 +22,7 @@ ToDo
 
 export class PositionEditor extends Extension {
 
-    constructor(chessboard) {
+    constructor(chessboard, props = {}) {
         super(chessboard)
         chessboard.addExtension(PromotionDialog)
         chessboard.addExtension(SelectPieceDialog)
@@ -38,6 +38,10 @@ export class PositionEditor extends Extension {
                     return this.onMoveInputFinished(event)
             }
         })
+        this.props = {
+            autoSpecialMoves: true // castling, en passant, promotion
+        }
+        Object.assign(this.props, props)
         this.dialogShown = false
         this.clickListener = this.onClick.bind(this)
         chessboard.context.addEventListener("click", this.clickListener)
@@ -60,7 +64,7 @@ export class PositionEditor extends Extension {
     }
 
     onMoveInputFinished(event) {
-        if (event.squareTo) {
+        if (event.squareTo && this.props.autoSpecialMoves) {
             this.handlePromotion(event)
             this.handleCastling(event)
             this.handleEnPassant(event)
