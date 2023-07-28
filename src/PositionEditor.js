@@ -10,17 +10,6 @@ import {MOVE_CANCELED_REASON} from "cm-chessboard/src/view/VisualMoveInput.js"
 import {SelectPieceDialog} from "./extensions/SelectPieceDialog.js"
 import {MARKER_TYPE} from "cm-chessboard/src/extensions/markers/Markers.js"
 
-/*
-ToDo
-    - Select piece (done ✓)
-    - Promotion (done ✓)
-    - Castling (done ✓)
-    - En passant (done ✓)
-    - Take move back
-    - Take all moves back
-*/
-
-// clone MARKER_TYPE.frame
 const MARKER_TYPE_NEW_PIECE = {...MARKER_TYPE.frame}
 
 export class PositionEditor extends Extension {
