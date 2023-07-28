@@ -56,36 +56,41 @@ export class PositionEditor extends Extension {
         } else {
             this.captured = null
         }
-        return this.handlePromotion(event)
+        return true
     }
 
     onMoveInputFinished(event) {
-        let castling = false
-        let enPassant = false
+        let castling, enPassant, promotion
         if (event.squareTo && this.props.autoSpecialMoves) {
             castling = this.handleCastling(event)
-            enPassant = this.handleEnPassant(event)
+            if(!castling) {
+                enPassant = this.handleEnPassant(event)
+                if(!enPassant) {
+                    promotion = !this.handlePromotion(event)
+                }
+            }
         }
-        if (this.props.onPositionChanged && event.legalMove) {
+        if (this.props.onPositionChanged) {
             let type = "move"
             if (enPassant || this.captured) {
                 type = "capture"
-            }
-            if (castling) {
+            } else if (castling) {
                 type = "castling"
             }
-            this.props.onPositionChanged({position: this.chessboard.getPosition(), type: type})
+            if(!promotion) {
+                this.props.onPositionChanged({position: this.chessboard.getPosition(), type: type})
+            }
         }
     }
 
     handlePromotion(event) {
-        const piece = this.chessboard.getPiece(event.squareFrom)
+        const piece = this.chessboard.getPiece(event.squareTo)
         const color = piece[0]
         const type = piece[1]
         if (type === "p" &&
             (color === COLOR.white && event.squareTo[1] === "8" ||
                 color === COLOR.black && event.squareTo[1] === "1")) {
-            this.chessboard.movePiece(event.squareFrom, event.squareTo, false)
+            // this.chessboard.movePiece(event.squareFrom, event.squareTo, false)
             this.chessboard.showPromotionDialog(event.squareTo, color, (promoteTo) => {
                 if (promoteTo) {
                     this.chessboard.setPiece(event.squareFrom, null, false)
@@ -153,6 +158,7 @@ export class PositionEditor extends Extension {
 
     onSquareClick(event) {
         const square = event.target.getAttribute("data-square")
+        // console.log("onSquareClick", square, square ? this.chessboard.getPiece(square) : null)
         if (square && !this.chessboard.getPiece(square)) {
             if (!this.dialogShown) {
                 this.chessboard.showSelectPieceDialog(square, (result) => {
