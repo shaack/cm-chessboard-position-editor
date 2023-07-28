@@ -77,7 +77,7 @@ export class PositionEditor extends Extension {
             } else if (castling) {
                 type = "castling"
             }
-            if(!promotion) {
+            if(!promotion && event.legalMove) {
                 this.props.onPositionChanged({position: this.chessboard.getPosition(), type: type})
             }
         }
