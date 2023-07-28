@@ -66,7 +66,7 @@ export class PositionEditor extends Extension {
             if(!castling) {
                 enPassant = this.handleEnPassant(event)
                 if(!enPassant) {
-                    promotion = !this.handlePromotion(event)
+                    promotion = this.handlePromotion(event)
                 }
             }
         }
@@ -102,9 +102,9 @@ export class PositionEditor extends Extension {
                     this.chessboard.movePiece(event.squareTo, event.squareFrom, true)
                 }
             })
-            return false
+            return true
         }
-        return true
+        return false
     }
 
     handleCastling(event) {
