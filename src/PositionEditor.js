@@ -21,7 +21,7 @@ ToDo
 */
 
 // clone MARKER_TYPE.frame
-const MARKER_TYPE_NEW_PIECE = { ...MARKER_TYPE.frame }
+const MARKER_TYPE_NEW_PIECE = {...MARKER_TYPE.frame}
 
 export class PositionEditor extends Extension {
 
@@ -56,7 +56,7 @@ export class PositionEditor extends Extension {
         if (event.reason === MOVE_CANCELED_REASON.movedOutOfBoard) {
             this.chessboard.setPiece(event.squareFrom, null)
             if (this.props.onPositionChanged) {
-                this.props.onPositionChanged(this.chessboard.getPosition())
+                this.props.onPositionChanged({position: this.chessboard.getPosition(), type: "pieceRemoved"})
             }
         }
     }
@@ -71,12 +71,21 @@ export class PositionEditor extends Extension {
     }
 
     onMoveInputFinished(event) {
+        let castling = false
+        let enPassant = false
         if (event.squareTo && this.props.autoSpecialMoves) {
-            this.handleCastling(event)
-            this.handleEnPassant(event)
+            castling = this.handleCastling(event)
+            enPassant = this.handleEnPassant(event)
         }
         if (this.props.onPositionChanged && event.legalMove) {
-            this.props.onPositionChanged(this.chessboard.getPosition())
+            let type = "move"
+            if (enPassant || this.captured) {
+                type = "capture"
+            }
+            if (castling) {
+                type = "castling"
+            }
+            this.props.onPositionChanged({position: this.chessboard.getPosition(), type: type})
         }
     }
 
@@ -89,11 +98,11 @@ export class PositionEditor extends Extension {
                 color === COLOR.black && event.squareTo[1] === "1")) {
             this.chessboard.movePiece(event.squareFrom, event.squareTo, false)
             this.chessboard.showPromotionDialog(event.squareTo, color, (promoteTo) => {
-                if(promoteTo) {
+                if (promoteTo) {
                     this.chessboard.setPiece(event.squareFrom, null, false)
                     this.chessboard.setPiece(promoteTo.square, promoteTo.piece, true)
                     if (this.props.onPositionChanged) {
-                        this.props.onPositionChanged(this.chessboard.getPosition())
+                        this.props.onPositionChanged({position: this.chessboard.getPosition(), type: "promotion"})
                     }
                 } else {
                     this.chessboard.movePiece(event.squareTo, event.squareFrom, true)
@@ -112,18 +121,22 @@ export class PositionEditor extends Extension {
             if (event.squareFrom[1] === "1" && event.squareTo[1] === "1" && color === COLOR.white) {
                 if (event.squareFrom[0] === "e" && event.squareTo[0] === "g" && this.chessboard.getPiece("h1") === "wr") {
                     this.chessboard.movePiece("h1", "f1", true)
+                    return true
                 } else if (event.squareFrom[0] === "e" && event.squareTo[0] === "c" && this.chessboard.getPiece("a1") === "wr") {
                     this.chessboard.movePiece("a1", "d1", true)
+                    return true
                 }
-            }
-            if (event.squareFrom[1] === "8" && event.squareTo[1] === "8" && color === COLOR.black) {
+            } else if (event.squareFrom[1] === "8" && event.squareTo[1] === "8" && color === COLOR.black) {
                 if (event.squareFrom[0] === "e" && event.squareTo[0] === "g" && this.chessboard.getPiece("h8") === "br") {
                     this.chessboard.movePiece("h8", "f8", true)
+                    return true
                 } else if (event.squareFrom[0] === "e" && event.squareTo[0] === "c" && this.chessboard.getPiece("a8") === "br") {
                     this.chessboard.movePiece("a8", "d8", true)
+                    return true
                 }
             }
         }
+        return false
     }
 
     handleEnPassant(event) {
@@ -138,12 +151,15 @@ export class PositionEditor extends Extension {
             if (color === COLOR.white && rankFrom === 5 && rankTo === 6 && Math.abs(fileFrom - fileTo) === 1 &&
                 !this.captured && this.chessboard.getPiece(event.squareTo[0] + event.squareFrom[1]) === "bp") {
                 this.chessboard.setPiece(event.squareTo[0] + event.squareFrom[1], null, true)
+                return true
             }
             if (color === COLOR.black && rankFrom === 4 && rankTo === 3 && Math.abs(fileFrom - fileTo) === 1 &&
                 !this.captured && this.chessboard.getPiece(event.squareTo[0] + event.squareFrom[1]) === "wp") {
                 this.chessboard.setPiece(event.squareTo[0] + event.squareFrom[1], null, true)
+                return true
             }
         }
+        return false
     }
 
     onSquareClick(event) {
@@ -154,7 +170,7 @@ export class PositionEditor extends Extension {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
                         if (this.props.onPositionChanged) {
-                            this.props.onPositionChanged(this.chessboard.getPosition())
+                            this.props.onPositionChanged({position: this.chessboard.getPosition(), type: "createPiece"})
                         }
                     }
                     setTimeout(() => {
