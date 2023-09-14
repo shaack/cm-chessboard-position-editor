@@ -12,6 +12,15 @@ import {MARKER_TYPE} from "cm-chessboard/src/extensions/markers/Markers.js"
 
 const MARKER_TYPE_NEW_PIECE = {...MARKER_TYPE.frame}
 
+export const POSITION_CHANGED_TYPE = {
+    move: "move",
+    capture: "capture",
+    castling: "castling",
+    promotion: "promotion",
+    createPiece: "createPiece",
+    removePiece: "removePiece"
+}
+
 export class PositionEditor extends Extension {
 
     constructor(chessboard, props = {}) {
@@ -45,7 +54,10 @@ export class PositionEditor extends Extension {
         if (event.reason === MOVE_CANCELED_REASON.movedOutOfBoard) {
             this.chessboard.setPiece(event.squareFrom, null)
             if (this.props.onPositionChanged) {
-                this.props.onPositionChanged({position: this.chessboard.getPosition(), type: "pieceRemoved"})
+                this.props.onPositionChanged({
+                    position: this.chessboard.getPosition(),
+                    type: POSITION_CHANGED_TYPE.removePiece
+                })
             }
         }
     }
@@ -63,21 +75,21 @@ export class PositionEditor extends Extension {
         let castling, enPassant, promotion
         if (event.squareTo && this.props.autoSpecialMoves) {
             castling = this.handleCastling(event)
-            if(!castling) {
+            if (!castling) {
                 enPassant = this.handleEnPassant(event)
-                if(!enPassant) {
+                if (!enPassant) {
                     promotion = this.handlePromotion(event)
                 }
             }
         }
         if (this.props.onPositionChanged) {
-            let type = "move"
+            let type = POSITION_CHANGED_TYPE.move
             if (enPassant || this.captured) {
-                type = "capture"
+                type = POSITION_CHANGED_TYPE.capture
             } else if (castling) {
-                type = "castling"
+                type = POSITION_CHANGED_TYPE.castling
             }
-            if(!promotion && event.legalMove) {
+            if (!promotion && event.legalMove) {
                 this.props.onPositionChanged({position: this.chessboard.getPosition(), type: type})
             }
         }
@@ -96,7 +108,10 @@ export class PositionEditor extends Extension {
                     this.chessboard.setPiece(event.squareFrom, null, false)
                     this.chessboard.setPiece(promoteTo.square, promoteTo.piece, true)
                     if (this.props.onPositionChanged) {
-                        this.props.onPositionChanged({position: this.chessboard.getPosition(), type: "promotion"})
+                        this.props.onPositionChanged({
+                            position: this.chessboard.getPosition(),
+                            type: POSITION_CHANGED_TYPE.promotion
+                        })
                     }
                 } else {
                     this.chessboard.movePiece(event.squareTo, event.squareFrom, true)
@@ -165,7 +180,10 @@ export class PositionEditor extends Extension {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
                         if (this.props.onPositionChanged) {
-                            this.props.onPositionChanged({position: this.chessboard.getPosition(), type: "createPiece"})
+                            this.props.onPositionChanged({
+                                position: this.chessboard.getPosition(),
+                                type: POSITION_CHANGED_TYPE.createPiece
+                            })
                         }
                     }
                     setTimeout(() => {
