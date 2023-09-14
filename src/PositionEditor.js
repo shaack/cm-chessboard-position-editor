@@ -4,7 +4,10 @@
  * License: MIT, see file 'LICENSE'
  */
 import {Extension} from "cm-chessboard/src/model/Extension.js"
-import {PromotionDialog} from "cm-chessboard/src/extensions/promotion-dialog/PromotionDialog.js"
+import {
+    PROMOTION_DIALOG_RESULT_TYPE,
+    PromotionDialog
+} from "cm-chessboard/src/extensions/promotion-dialog/PromotionDialog.js"
 import {COLOR, INPUT_EVENT_TYPE} from "cm-chessboard/src/Chessboard.js"
 import {MOVE_CANCELED_REASON} from "cm-chessboard/src/view/VisualMoveInput.js"
 import {SelectPieceDialog} from "./extensions/SelectPieceDialog.js"
@@ -103,10 +106,10 @@ export class PositionEditor extends Extension {
             (color === COLOR.white && event.squareTo[1] === "8" ||
                 color === COLOR.black && event.squareTo[1] === "1")) {
             // this.chessboard.movePiece(event.squareFrom, event.squareTo, false)
-            this.chessboard.showPromotionDialog(event.squareTo, color, (promoteTo) => {
-                if (promoteTo) {
+            this.chessboard.showPromotionDialog(event.squareTo, color, (result) => {
+                if (result.type === PROMOTION_DIALOG_RESULT_TYPE.pieceSelected) {
                     this.chessboard.setPiece(event.squareFrom, null, false)
-                    this.chessboard.setPiece(promoteTo.square, promoteTo.piece, true)
+                    this.chessboard.setPiece(result.square, result.piece, true)
                     if (this.props.onPositionChanged) {
                         this.props.onPositionChanged({
                             position: this.chessboard.getPosition(),
