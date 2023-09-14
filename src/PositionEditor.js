@@ -28,8 +28,17 @@ export class PositionEditor extends Extension {
 
     constructor(chessboard, props = {}) {
         super(chessboard)
-        chessboard.addExtension(PromotionDialog)
-        chessboard.addExtension(SelectPieceDialog)
+        if(!chessboard.getExtension(PromotionDialog)) {
+            chessboard.addExtension(PromotionDialog)
+        }
+        if(!chessboard.getExtension(SelectPieceDialog)) {
+            chessboard.addExtension(SelectPieceDialog)
+        }
+        this.props = {
+            autoSpecialMoves: true, // castling, en passant, promotion
+            onPositionChanged: undefined // callback after each position change
+        }
+        Object.assign(this.props, props)
         chessboard.enableMoveInput((event) => {
             switch (event.type) {
                 case INPUT_EVENT_TYPE.moveInputStarted:
@@ -42,14 +51,17 @@ export class PositionEditor extends Extension {
                     return this.onMoveInputFinished(event)
             }
         })
-        this.props = {
-            autoSpecialMoves: true, // castling, en passant, promotion
-            onPositionChanged: undefined // callback after each position change
-        }
-        Object.assign(this.props, props)
-        this.dialogShown = false
+        this.dialogShown = false // todo rename to selectPieceDialogShown
         this.clickListener = this.onSquareClick.bind(this)
         chessboard.context.addEventListener("click", this.clickListener)
+    }
+
+    enable() {
+        // todo store the chessboard state and enable the free board
+    }
+
+    disable() {
+        // todo resume the chessboard state and disable the free board
     }
 
     onMoveInputCanceled(event) {
@@ -178,7 +190,7 @@ export class PositionEditor extends Extension {
         const square = event.target.getAttribute("data-square")
         // console.log("onSquareClick", square, square ? this.chessboard.getPiece(square) : null)
         if (square && !this.chessboard.getPiece(square)) {
-            if (!this.dialogShown) {
+            if (!this.dialogShown) { // todo and not promotion dialog is shown
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
