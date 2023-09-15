@@ -19,8 +19,6 @@
         <div id="chessboard"></div>
     </section>
     <div class="buttons">
-        <button onclick="enablePositionEditor()">Enable PositionEditor</button>
-        <button onclick="disablePositionEditor()">Disable PositionEditor</button>
         <button onclick="switchOrientation()">Switch Orientation</button>
     </div>
 </section>
@@ -35,7 +33,7 @@
 </script>
 <!-- @formatter:on -->
 <script type="module">
-    import {Chessboard, COLOR} from "cm-chessboard/src/Chessboard.js"
+    import {Chessboard} from "cm-chessboard/src/Chessboard.js"
     import {PositionEditor} from "./src/PositionEditor.js"
     import {Markers} from "cm-chessboard/src/extensions/markers/Markers.js"
 
@@ -53,18 +51,8 @@
             }
         }, {class: Markers}]
     })
-    chessboard.enableMoveInput((event) => {
-        console.log("move input", event)
-        return true
-    }, COLOR.black)
     window.switchOrientation = function () {
         chessboard.setOrientation(chessboard.getOrientation() === 'w' ? 'b' : 'w')
-    }
-    window.enablePositionEditor = function () {
-        chessboard.enablePositionEditor()
-    }
-    window.disablePositionEditor = function () {
-        chessboard.disablePositionEditor()
     }
 </script>
 </body>

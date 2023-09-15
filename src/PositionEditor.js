@@ -41,35 +41,14 @@ export class PositionEditor extends Extension {
         }
         this.props = {
             autoSpecialMoves: true, // castling, en passant, promotion
-            onPositionChange: undefined, // callback after each position change
-            onEditorToggle: undefined // callback after the editor was enabled or disabled
+            onPositionChange: undefined // callback after each position change
         }
         Object.assign(this.props, props)
         this.clickListener = this.onSquareClick.bind(this)
         this.state = {
-            dialogShown: false, // todo rename to selectPieceDialogShown
-            chessboardState: null,
-            enabled: false
+            selectPieceDialogShown: false, // todo rename to selectPieceDialogShown
+            promotionDialogShown: false
         }
-        // overwrite chessboard methods
-        chessboard.enablePositionEditor = this.enable.bind(this)
-        chessboard.disablePositionEditor = this.disable.bind(this)
-    }
-
-    enable() {
-        if (this.state.enabled) {
-            throw new Error("PositionEditor already enabled")
-        }
-        // copy the chessboard state
-        this.state.chessboardState = {
-            position: this.chessboard.getPosition(),
-            orientation: this.chessboard.state.orientation,
-            inputWhiteEnabled: this.chessboard.state.inputWhiteEnabled,
-            inputBlackEnabled: this.chessboard.state.inputBlackEnabled,
-            moveInputCallback: this.chessboard.state.moveInputCallback,
-        }
-        this.chessboard.disableMoveInput()
-        // enable the free board
         this.chessboard.enableMoveInput((event) => {
             switch (event.type) {
                 case INPUT_EVENT_TYPE.moveInputStarted:
@@ -83,41 +62,6 @@ export class PositionEditor extends Extension {
             }
         })
         this.chessboard.context.addEventListener("click", this.clickListener)
-        this.state.enabled = true
-        if (this.props.onEditorToggle) {
-            this.props.onEditorToggle({enabled: true})
-        }
-    }
-
-    disable() {
-        if (!this.state.enabled) {
-            throw new Error("PositionEditor not enabled")
-        }
-        // disable the free board
-        this.chessboard.disableMoveInput()
-        this.chessboard.context.removeEventListener("click", this.clickListener)
-        // resume the chessboard state
-        if (this.chessboard.getOrientation() !== this.state.chessboardState.orientation) {
-            this.chessboard.setOrientation(this.state.chessboardState.orientation, false)
-        }
-        this.chessboard.setPosition(this.state.chessboardState.position, true)
-        if (this.state.chessboardState.moveInputCallback) {
-            let color
-            if (this.state.chessboardState.inputWhiteEnabled && this.state.chessboardState.inputBlackEnabled) {
-                color = undefined
-            } else if (this.state.chessboardState.inputWhiteEnabled) {
-                color = COLOR.white
-            } else if (this.state.chessboardState.inputBlackEnabled) {
-                color = COLOR.black
-            } else {
-                console.error("invalid state")
-            }
-            this.chessboard.enableMoveInput(this.state.chessboardState.moveInputCallback, color)
-        }
-        this.state.enabled = false
-        if (this.props.onEditorToggle) {
-            this.props.onEditorToggle({enabled: false})
-        }
     }
 
     onMoveInputCanceled(event) {
@@ -155,10 +99,10 @@ export class PositionEditor extends Extension {
         }
         if (this.props.onPositionChange) {
             let type = POSITION_CHANGED_TYPE.move
-            if (enPassant || this.captured) {
-                type = POSITION_CHANGED_TYPE.capture
-            } else if (castling) {
+            if (castling) {
                 type = POSITION_CHANGED_TYPE.castling
+            } else if (enPassant || this.captured) {
+                type = POSITION_CHANGED_TYPE.capture
             }
             if (!promotion && event.legalMove) {
                 this.props.onPositionChange({position: this.chessboard.getPosition(), type: type})
@@ -171,9 +115,8 @@ export class PositionEditor extends Extension {
         const color = piece[0]
         const type = piece[1]
         if (type === "p" &&
-            (color === COLOR.white && event.squareTo[1] === "8" ||
-                color === COLOR.black && event.squareTo[1] === "1")) {
-            // this.chessboard.movePiece(event.squareFrom, event.squareTo, false)
+            (color === COLOR.white && event.squareTo[1] === "8" || color === COLOR.black && event.squareTo[1] === "1")) {
+            this.state.promotionDialogShown = true
             this.chessboard.showPromotionDialog(event.squareTo, color, (result) => {
                 if (result.type === PROMOTION_DIALOG_RESULT_TYPE.pieceSelected) {
                     this.chessboard.setPiece(event.squareFrom, null, false)
@@ -187,6 +130,9 @@ export class PositionEditor extends Extension {
                 } else {
                     this.chessboard.movePiece(event.squareTo, event.squareFrom, true)
                 }
+                setTimeout(() => {
+                    this.state.promotionDialogShown = false
+                }, 500)
             })
             return true
         }
@@ -243,10 +189,12 @@ export class PositionEditor extends Extension {
     }
 
     onSquareClick(event) {
+        if(this.state.promotionDialogShown) {
+            return
+        }
         const square = event.target.getAttribute("data-square")
-        // console.log("onSquareClick", square, square ? this.chessboard.getPiece(square) : null)
         if (square && !this.chessboard.getPiece(square)) {
-            if (!this.state.dialogShown) { // todo and not promotion dialog is shown
+            if (!this.state.selectPieceDialogShown) { // todo and not promotion dialog is shown
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
@@ -258,13 +206,13 @@ export class PositionEditor extends Extension {
                         }
                     }
                     setTimeout(() => {
-                        this.state.dialogShown = false
+                        this.state.selectPieceDialogShown = false
                         this.chessboard.removeMarkers(MARKER_TYPE_NEW_PIECE, square)
                     })
                 })
                 this.chessboard.addMarker(MARKER_TYPE_NEW_PIECE, square)
             }
-            this.state.dialogShown = true
+            this.state.selectPieceDialogShown = true
         }
     }
 }
