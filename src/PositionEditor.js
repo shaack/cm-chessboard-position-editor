@@ -26,6 +26,7 @@ export const POSITION_CHANGED_TYPE = {
 
 export class PositionEditor extends Extension {
 
+    /** @constructor */
     constructor(chessboard, props = {}) {
         super(chessboard)
         if(!chessboard.getExtension(PromotionDialog)) {
@@ -39,7 +40,29 @@ export class PositionEditor extends Extension {
             onPositionChanged: undefined // callback after each position change
         }
         Object.assign(this.props, props)
-        chessboard.enableMoveInput((event) => {
+        this.clickListener = this.onSquareClick.bind(this)
+        this.state = {
+            dialogShown: false, // todo rename to selectPieceDialogShown
+            chessboardState: null,
+            enabled: false
+        }
+        // overwrite chessboard methods
+        chessboard.enablePositionEditor = this.enable.bind(this)
+        chessboard.disablePositionEditor = this.disable.bind(this)
+    }
+
+    enable() {
+        // copy the chessboard state
+        this.state.chessboardState = {
+            position: this.chessboard.getPosition(),
+            orientation: this.chessboard.props.orientation,
+            inputWhiteEnabled: this.chessboard.props.inputWhiteEnabled,
+            inputBlackEnabled: this.chessboard.props.inputBlackEnabled,
+            moveInputCallback: this.chessboard.props.moveInputCallback,
+        }
+        this.chessboard.disableMoveInput()
+        // enable the free board
+        this.chessboard.enableMoveInput((event) => {
             switch (event.type) {
                 case INPUT_EVENT_TYPE.moveInputStarted:
                     return true
@@ -51,17 +74,23 @@ export class PositionEditor extends Extension {
                     return this.onMoveInputFinished(event)
             }
         })
-        this.dialogShown = false // todo rename to selectPieceDialogShown
-        this.clickListener = this.onSquareClick.bind(this)
-        chessboard.context.addEventListener("click", this.clickListener)
-    }
-
-    enable() {
-        // todo store the chessboard state and enable the free board
+        this.chessboard.context.addEventListener("click", this.clickListener)
+        this.state.enabled = true
     }
 
     disable() {
-        // todo resume the chessboard state and disable the free board
+        // disable the free board
+        this.chessboard.disableMoveInput()
+        this.chessboard.context.removeEventListener("click", this.clickListener)
+        // resume the chessboard state
+        if(this.chessboard.getOrientation() !== this.state.chessboardState.orientation) {
+            this.chessboard.setOrientation(this.state.chessboardState.orientation, false)
+        }
+        this.chessboard.setPosition(this.state.chessboardState.position, true)
+        this.chessboard.state.inputWhiteEnabled = this.state.chessboardState.inputWhiteEnabled
+        this.chessboard.state.inputBlackEnabled = this.state.chessboardState.inputBlackEnabled
+        this.chessboard.state.moveInputCallback = this.state.chessboardState.moveInputCallback
+        this.state.enabled = false
     }
 
     onMoveInputCanceled(event) {
@@ -190,7 +219,7 @@ export class PositionEditor extends Extension {
         const square = event.target.getAttribute("data-square")
         // console.log("onSquareClick", square, square ? this.chessboard.getPiece(square) : null)
         if (square && !this.chessboard.getPiece(square)) {
-            if (!this.dialogShown) { // todo and not promotion dialog is shown
+            if (!this.state.dialogShown) { // todo and not promotion dialog is shown
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
@@ -202,13 +231,13 @@ export class PositionEditor extends Extension {
                         }
                     }
                     setTimeout(() => {
-                        this.dialogShown = false
+                        this.state.dialogShown = false
                         this.chessboard.removeMarkers(MARKER_TYPE_NEW_PIECE, square)
                     })
                 })
                 this.chessboard.addMarker(MARKER_TYPE_NEW_PIECE, square)
             }
-            this.dialogShown = true
+            this.state.dialogShown = true
         }
     }
 }

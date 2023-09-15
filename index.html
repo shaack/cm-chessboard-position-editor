@@ -14,10 +14,16 @@
 </head>
 <body>
 <h1>A PositionEditor extension for cm-chessboard</h1>
-<div id="chessboard" style="max-width: 800px; margin: 0 auto"></div>
-<button style="margin-top: 10px"
-        onclick="window.switchOrientation()">Switch Orientation
-</button>
+<section style="max-width: 700px; margin: 0 auto">
+    <section>
+        <div id="chessboard"></div>
+    </section>
+    <div class="buttons">
+        <button onclick="enablePositionEditor()">Enable PositionEditor</button>
+        <button onclick="disablePositionEditor()">Disable PositionEditor</button>
+        <button onclick="switchOrientation()">Switch Orientation</button>
+    </div>
+</section>
 <script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.8.0/dist/es-module-shims.min.js"></script>
 <!-- @formatter:off -->
 <script type="importmap">
@@ -29,7 +35,7 @@
 </script>
 <!-- @formatter:on -->
 <script type="module">
-    import {Chessboard} from "cm-chessboard/src/Chessboard.js"
+    import {Chessboard, COLOR} from "cm-chessboard/src/Chessboard.js"
     import {PositionEditor} from "./src/PositionEditor.js"
     import {Markers} from "cm-chessboard/src/extensions/markers/Markers.js"
 
@@ -44,8 +50,18 @@
             }
         }, {class: Markers}]
     })
+    chessboard.enableMoveInput((event) => {
+        console.log("move input", event)
+        return true
+    }, COLOR.black)
     window.switchOrientation = function () {
         chessboard.setOrientation(chessboard.getOrientation() === 'w' ? 'b' : 'w')
+    }
+    window.enablePositionEditor = function () {
+        chessboard.enablePositionEditor()
+    }
+    window.disablePositionEditor = function () {
+        chessboard.disablePositionEditor()
     }
 </script>
 </body>
