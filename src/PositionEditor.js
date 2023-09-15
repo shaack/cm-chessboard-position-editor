@@ -46,7 +46,7 @@ export class PositionEditor extends Extension {
         Object.assign(this.props, props)
         this.clickListener = this.onSquareClick.bind(this)
         this.state = {
-            selectPieceDialogShown: false, // todo rename to selectPieceDialogShown
+            selectPieceDialogShown: false,
             promotionDialogShown: false
         }
         this.chessboard.enableMoveInput((event) => {
@@ -194,7 +194,7 @@ export class PositionEditor extends Extension {
         }
         const square = event.target.getAttribute("data-square")
         if (square && !this.chessboard.getPiece(square)) {
-            if (!this.state.selectPieceDialogShown) { // todo and not promotion dialog is shown
+            if (!this.state.selectPieceDialogShown) {
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
