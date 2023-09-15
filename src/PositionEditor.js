@@ -52,13 +52,16 @@ export class PositionEditor extends Extension {
     }
 
     enable() {
+        if(this.state.enabled) {
+            throw new Error("PositionEditor already enabled")
+        }
         // copy the chessboard state
         this.state.chessboardState = {
             position: this.chessboard.getPosition(),
-            orientation: this.chessboard.props.orientation,
-            inputWhiteEnabled: this.chessboard.props.inputWhiteEnabled,
-            inputBlackEnabled: this.chessboard.props.inputBlackEnabled,
-            moveInputCallback: this.chessboard.props.moveInputCallback,
+            orientation: this.chessboard.state.orientation,
+            inputWhiteEnabled: this.chessboard.state.inputWhiteEnabled,
+            inputBlackEnabled: this.chessboard.state.inputBlackEnabled,
+            moveInputCallback: this.chessboard.state.moveInputCallback,
         }
         this.chessboard.disableMoveInput()
         // enable the free board
@@ -79,6 +82,9 @@ export class PositionEditor extends Extension {
     }
 
     disable() {
+        if(!this.state.enabled) {
+            throw new Error("PositionEditor not enabled")
+        }
         // disable the free board
         this.chessboard.disableMoveInput()
         this.chessboard.context.removeEventListener("click", this.clickListener)
@@ -87,9 +93,19 @@ export class PositionEditor extends Extension {
             this.chessboard.setOrientation(this.state.chessboardState.orientation, false)
         }
         this.chessboard.setPosition(this.state.chessboardState.position, true)
-        this.chessboard.state.inputWhiteEnabled = this.state.chessboardState.inputWhiteEnabled
-        this.chessboard.state.inputBlackEnabled = this.state.chessboardState.inputBlackEnabled
-        this.chessboard.state.moveInputCallback = this.state.chessboardState.moveInputCallback
+        if(this.state.chessboardState.moveInputCallback) {
+            let color
+            if(this.state.chessboardState.inputWhiteEnabled && this.state.chessboardState.inputBlackEnabled) {
+                color = undefined
+            } else if(this.state.chessboardState.inputWhiteEnabled) {
+                color = COLOR.white
+            } else if(this.state.chessboardState.inputBlackEnabled) {
+                color = COLOR.black
+            } else {
+                console.error("invalid state")
+            }
+            this.chessboard.enableMoveInput(this.state.chessboardState.moveInputCallback, color)
+        }
         this.state.enabled = false
     }
 
