@@ -44,9 +44,12 @@
         assetsUrl: "node_modules/cm-chessboard/assets/",
         extensions: [{
             class: PositionEditor, props: {
-                onPositionChanged: (position) => {
-                    console.log("position changed", position)
-                }
+                onPositionChange: (event) => {
+                    console.log("onPositionChange", event)
+                },
+                onEditorToggle: (event) => {
+                    console.log("onEditorToggle", event)
+                },
             }
         }, {class: Markers}]
     })

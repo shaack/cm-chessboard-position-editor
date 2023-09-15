@@ -29,15 +29,20 @@ export class PositionEditor extends Extension {
     /** @constructor */
     constructor(chessboard, props = {}) {
         super(chessboard)
-        if(!chessboard.getExtension(PromotionDialog)) {
+        if (!chessboard.getExtension(PromotionDialog)) {
             chessboard.addExtension(PromotionDialog)
         }
-        if(!chessboard.getExtension(SelectPieceDialog)) {
+        if (!chessboard.getExtension(SelectPieceDialog)) {
             chessboard.addExtension(SelectPieceDialog)
+        }
+        if (props.onPositionChanged) { // deprecated 2023-09-15
+            console.warn("onPositionChanged is deprecated, use onPositionChange")
+            props.onPositionChange = props.onPositionChanged
         }
         this.props = {
             autoSpecialMoves: true, // castling, en passant, promotion
-            onPositionChanged: undefined // callback after each position change
+            onPositionChange: undefined, // callback after each position change
+            onEditorToggle: undefined // callback after the editor was enabled or disabled
         }
         Object.assign(this.props, props)
         this.clickListener = this.onSquareClick.bind(this)
@@ -52,7 +57,7 @@ export class PositionEditor extends Extension {
     }
 
     enable() {
-        if(this.state.enabled) {
+        if (this.state.enabled) {
             throw new Error("PositionEditor already enabled")
         }
         // copy the chessboard state
@@ -79,27 +84,30 @@ export class PositionEditor extends Extension {
         })
         this.chessboard.context.addEventListener("click", this.clickListener)
         this.state.enabled = true
+        if (this.props.onEditorToggle) {
+            this.props.onEditorToggle({enabled: true})
+        }
     }
 
     disable() {
-        if(!this.state.enabled) {
+        if (!this.state.enabled) {
             throw new Error("PositionEditor not enabled")
         }
         // disable the free board
         this.chessboard.disableMoveInput()
         this.chessboard.context.removeEventListener("click", this.clickListener)
         // resume the chessboard state
-        if(this.chessboard.getOrientation() !== this.state.chessboardState.orientation) {
+        if (this.chessboard.getOrientation() !== this.state.chessboardState.orientation) {
             this.chessboard.setOrientation(this.state.chessboardState.orientation, false)
         }
         this.chessboard.setPosition(this.state.chessboardState.position, true)
-        if(this.state.chessboardState.moveInputCallback) {
+        if (this.state.chessboardState.moveInputCallback) {
             let color
-            if(this.state.chessboardState.inputWhiteEnabled && this.state.chessboardState.inputBlackEnabled) {
+            if (this.state.chessboardState.inputWhiteEnabled && this.state.chessboardState.inputBlackEnabled) {
                 color = undefined
-            } else if(this.state.chessboardState.inputWhiteEnabled) {
+            } else if (this.state.chessboardState.inputWhiteEnabled) {
                 color = COLOR.white
-            } else if(this.state.chessboardState.inputBlackEnabled) {
+            } else if (this.state.chessboardState.inputBlackEnabled) {
                 color = COLOR.black
             } else {
                 console.error("invalid state")
@@ -107,14 +115,17 @@ export class PositionEditor extends Extension {
             this.chessboard.enableMoveInput(this.state.chessboardState.moveInputCallback, color)
         }
         this.state.enabled = false
+        if (this.props.onEditorToggle) {
+            this.props.onEditorToggle({enabled: false})
+        }
     }
 
     onMoveInputCanceled(event) {
         // remove piece if it was moved out of the board
         if (event.reason === MOVE_CANCELED_REASON.movedOutOfBoard) {
             this.chessboard.setPiece(event.squareFrom, null)
-            if (this.props.onPositionChanged) {
-                this.props.onPositionChanged({
+            if (this.props.onPositionChange) {
+                this.props.onPositionChange({
                     position: this.chessboard.getPosition(),
                     type: POSITION_CHANGED_TYPE.removePiece
                 })
@@ -142,7 +153,7 @@ export class PositionEditor extends Extension {
                 }
             }
         }
-        if (this.props.onPositionChanged) {
+        if (this.props.onPositionChange) {
             let type = POSITION_CHANGED_TYPE.move
             if (enPassant || this.captured) {
                 type = POSITION_CHANGED_TYPE.capture
@@ -150,7 +161,7 @@ export class PositionEditor extends Extension {
                 type = POSITION_CHANGED_TYPE.castling
             }
             if (!promotion && event.legalMove) {
-                this.props.onPositionChanged({position: this.chessboard.getPosition(), type: type})
+                this.props.onPositionChange({position: this.chessboard.getPosition(), type: type})
             }
         }
     }
@@ -167,8 +178,8 @@ export class PositionEditor extends Extension {
                 if (result.type === PROMOTION_DIALOG_RESULT_TYPE.pieceSelected) {
                     this.chessboard.setPiece(event.squareFrom, null, false)
                     this.chessboard.setPiece(result.square, result.piece, true)
-                    if (this.props.onPositionChanged) {
-                        this.props.onPositionChanged({
+                    if (this.props.onPositionChange) {
+                        this.props.onPositionChange({
                             position: this.chessboard.getPosition(),
                             type: POSITION_CHANGED_TYPE.promotion
                         })
@@ -239,8 +250,8 @@ export class PositionEditor extends Extension {
                 this.chessboard.showSelectPieceDialog(square, (result) => {
                     if (result) {
                         this.chessboard.setPiece(square, result.piece, true)
-                        if (this.props.onPositionChanged) {
-                            this.props.onPositionChanged({
+                        if (this.props.onPositionChange) {
+                            this.props.onPositionChange({
                                 position: this.chessboard.getPosition(),
                                 type: POSITION_CHANGED_TYPE.createPiece
                             })
