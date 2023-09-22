@@ -1,6 +1,6 @@
 {
   "name": "cm-chessboard-position-editor",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "cm-chessboard extension to edit chess positions",
   "main": "index.js",
   "scripts": {
