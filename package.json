@@ -19,7 +19,7 @@
   "author": "shaack.com",
   "license": "MIT",
   "dependencies": {
-    "cm-chessboard": "^8.0.2",
+    "cm-chessboard": "^8.2.1",
     "extreme-minimal-css": "^1.2.1"
   }
 }
