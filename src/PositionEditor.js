@@ -15,7 +15,7 @@ import {MARKER_TYPE} from "cm-chessboard/src/extensions/markers/Markers.js"
 
 const MARKER_TYPE_NEW_PIECE = {...MARKER_TYPE.frame}
 
-export const POSITION_CHANGED_TYPE = {
+export const POSITION_CHANGE_TYPE = {
     move: "move",
     capture: "capture",
     castling: "castling",
@@ -71,7 +71,7 @@ export class PositionEditor extends Extension {
             if (this.props.onPositionChange) {
                 this.props.onPositionChange({
                     position: this.chessboard.getPosition(),
-                    type: POSITION_CHANGED_TYPE.removePiece
+                    type: POSITION_CHANGE_TYPE.removePiece
                 })
             }
         }
@@ -98,11 +98,11 @@ export class PositionEditor extends Extension {
             }
         }
         if (this.props.onPositionChange) {
-            let type = POSITION_CHANGED_TYPE.move
+            let type = POSITION_CHANGE_TYPE.move
             if (castling) {
-                type = POSITION_CHANGED_TYPE.castling
+                type = POSITION_CHANGE_TYPE.castling
             } else if (enPassant || this.captured) {
-                type = POSITION_CHANGED_TYPE.capture
+                type = POSITION_CHANGE_TYPE.capture
             }
             if (!promotion && event.legalMove) {
                 this.props.onPositionChange({position: this.chessboard.getPosition(), type: type})
@@ -124,7 +124,7 @@ export class PositionEditor extends Extension {
                     if (this.props.onPositionChange) {
                         this.props.onPositionChange({
                             position: this.chessboard.getPosition(),
-                            type: POSITION_CHANGED_TYPE.promotion
+                            type: POSITION_CHANGE_TYPE.promotion
                         })
                     }
                 } else {
@@ -201,7 +201,7 @@ export class PositionEditor extends Extension {
                         if (this.props.onPositionChange) {
                             this.props.onPositionChange({
                                 position: this.chessboard.getPosition(),
-                                type: POSITION_CHANGED_TYPE.createPiece
+                                type: POSITION_CHANGE_TYPE.createPiece
                             })
                         }
                     }
