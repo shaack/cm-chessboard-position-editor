@@ -19,7 +19,7 @@ export class SelectPieceDialog extends Extension {
     /** @constructor */
     constructor(chessboard) {
         super(chessboard)
-        this.registerExtensionPoint(EXTENSION_POINT.redrawBoard, this.extensionPointRedrawBoard.bind(this))
+        this.registerExtensionPoint(EXTENSION_POINT.afterRedrawBoard, this.extensionPointRedrawBoard.bind(this))
         chessboard.showSelectPieceDialog = this.showSelectPieceDialog.bind(this)
         chessboard.cancelSelectPieceDialog = this.cancelSelectPieceDialog.bind(this)
         chessboard.isSelectPieceDialogShown = this.isSelectPieceDialogShown.bind(this)
