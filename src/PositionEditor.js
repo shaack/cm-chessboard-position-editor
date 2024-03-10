@@ -10,10 +10,8 @@ import {
 } from "cm-chessboard/src/extensions/promotion-dialog/PromotionDialog.js"
 import {COLOR, INPUT_EVENT_TYPE} from "cm-chessboard/src/Chessboard.js"
 import {MOVE_CANCELED_REASON} from "cm-chessboard/src/view/VisualMoveInput.js"
-import {SelectPieceDialog} from "./extensions/SelectPieceDialog.js"
 import {MARKER_TYPE} from "cm-chessboard/src/extensions/markers/Markers.js"
-
-const MARKER_TYPE_NEW_PIECE = {...MARKER_TYPE.frame}
+import {SelectPieceDialog} from "./extensions/SelectPieceDialog.js"
 
 export const POSITION_CHANGE_TYPE = {
     move: "move",
@@ -41,7 +39,10 @@ export class PositionEditor extends Extension {
         }
         this.props = {
             autoSpecialMoves: true, // castling, en passant, promotion
-            onPositionChange: undefined // callback after each position change
+            onPositionChange: undefined, // callback after each position change
+            markers: {
+                addPiece: {...MARKER_TYPE.frame}
+            }
         }
         Object.assign(this.props, props)
         this.clickListener = this.onSquareClick.bind(this)
@@ -189,7 +190,7 @@ export class PositionEditor extends Extension {
     }
 
     onSquareClick(event) {
-        if(this.state.promotionDialogShown) {
+        if (this.state.promotionDialogShown) {
             return
         }
         const square = event.target.getAttribute("data-square")
@@ -207,10 +208,10 @@ export class PositionEditor extends Extension {
                     }
                     setTimeout(() => {
                         this.state.selectPieceDialogShown = false
-                        this.chessboard.removeMarkers(MARKER_TYPE_NEW_PIECE, square)
+                        this.chessboard.removeMarkers(this.props.markers.addPiece, square)
                     })
                 })
-                this.chessboard.addMarker(MARKER_TYPE_NEW_PIECE, square)
+                this.chessboard.addMarker(this.props.markers.addPiece, square)
             }
             this.state.selectPieceDialogShown = true
         }
